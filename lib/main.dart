@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_custom_tabs/flutter_custom_tabs.dart' as custom;
+import 'package:flutter_web_browser/flutter_web_browser.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 void main() => runApp(MyApp());
 
@@ -44,17 +48,29 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  void _launchURL(BuildContext context) async {
+    try {
+      await custom.launch(
+        'https://flutter.io/',
+        option: custom.CustomTabsOption(
+          toolbarColor: Theme.of(context).primaryColor,
+          enableInstantApps: false,
+          enableDefaultShare: true,
+          enableUrlBarHiding: false,
+          showPageTitle: true,
+          animation: custom.CustomTabsAnimation.slideIn(),
+          extraCustomTabs: <String>[
+            // ref. https://play.google.com/store/apps/details?id=org.mozilla.firefox
+            'org.mozilla.firefox',
+            // ref. https://play.google.com/store/apps/details?id=com.microsoft.emmx
+            'com.microsoft.emmx',
+          ],
+        ),
+      );
+    } catch (e) {
+      // An exception is thrown if browser app is not installed on Android device.
+      debugPrint(e.toString());
+    }
   }
 
   @override
@@ -91,21 +107,37 @@ class _MyHomePageState extends State<MyHomePage> {
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
+            RaisedButton(
+              onPressed: () => FlutterWebBrowser.openWebPage(
+                url: "https://flutter.io/",
+                androidToolbarColor: Colors.deepPurple,
+              ),
+              child: Text(
+                'flutter_web_browser',
+              ),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.display1,
+            RaisedButton(
+              onPressed: () => launch(
+                'https://flutter.dev',
+              ),
+              child: Text(
+                'url_launcher',
+              ),
+            ),
+            RaisedButton(
+              onPressed: () => _launchURL(context),
+              child: Text(
+                'flutter_custom_tabs',
+              ),
+            ),
+            Flexible(
+              child: WebView(
+                initialUrl: 'https://flutter.dev',
+              ),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
